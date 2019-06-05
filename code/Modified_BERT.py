@@ -14,8 +14,7 @@
 # limitations under the License.
 
 # This is a modification of run_classifier.py for BERT from Google AI
-# The modification was done by Ken Krige April 2019 to parse GAP data for
-# kaggle competition https://www.kaggle.com/c/gendered-pronoun-resolution
+
 
 from __future__ import absolute_import
 from __future__ import division
