@@ -113,11 +113,17 @@ class PaddingInputExample(object):
   battches could cause silent errors.
   """
 
+# add input features P A B
 class InputFeatures(object):
 
-  def __init__(self, input_ids, input_mask,
-               P_mask, A_mask, B_mask,
-               segment_ids, label_id,
+  def __init__(self,
+               input_ids,
+               input_mask,
+               P_mask,
+               A_mask,
+               B_mask,
+               segment_ids,
+               label_id,
                is_real_example=True):
     self.input_ids = input_ids
     self.input_mask = input_mask
@@ -170,8 +176,16 @@ class GAProcessor(DataProcessor):
 
   def get_labels(self):
     return ["A", "B", "Neither"]
-
+  
   def _create_examples(self, lines, set_type):
+    '''
+    each line=[ID,Text,Pronoun,Pronoun-offset,A,A-offset, A-coref, B, B-offset, B-coref, url]
+    char_offsets = [P_offset, A_offset, B_offset]
+    short example:
+    line=[example-1,"Arya walked to Nymeria, her direwolf.", her,24, Arya, 0, True, Nymeria, 15, False, url]
+    text_a="Arya walked to Nymeria, her direwolf."
+    char_offsets=[24,0,15]
+    '''
     examples = []
     for (i, line) in enumerate(lines):
       if i == 0:
@@ -197,7 +211,27 @@ class GAProcessor(DataProcessor):
 
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
-
+  '''
+  
+  :param ex_index:
+  :param example:InputExample(guid=guid, text_a=text_a, char_offsets=char_offsets, label=label)
+  char_offsets = [P_offset, A_offset, B_offset]
+  ->char_off
+  example: char_offsets=[24,0,15]->sorted([[24,0],[0,1],[15,2]],key=lambda x:x[0])
+  ->char_off=[[0,1],[15,2],[24,0]]
+  text_a="Arya walked to Nymeria, her direwolf."
+  :param label_list:
+  :param max_seq_length:512 for BERT; 9 for this example
+  :param tokenizer:
+  text_segments=['Arya walked to ','Nymeria, ','her direwolf.']
+  token_segments
+  :return:
+  P_mask=[0,0,0,0,0,0,1,0,0]
+  A_mask=[0,1,0,0,0,0,0,0,0]
+  B_mask=[0,0,0,0,1,0,0,0,0]
+  initial_tokens=['Arya', 'walked', 'to','Nymeria', ',','her', 'direwolf', '.']
+  ->tokens=['[CLS]','Arya', 'walked', 'to','Nymeria', ',','her', 'direwolf','[SEP]']
+  '''
   P_mask = [0] * max_seq_length
   A_mask = [0] * max_seq_length
   B_mask = [0] * max_seq_length
