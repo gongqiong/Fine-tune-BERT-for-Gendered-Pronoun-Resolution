@@ -1,0 +1,37 @@
+\chapter{Experiments and Results}
+
+
+\section{Data}
+
+
+\begin{table}[htbp]
+  \centering
+  \caption[GAP Column]{GAP Dataset Overview}
+  \label{tab:template-files}
+    \begin{tabularx}{\linewidth}{clX}
+      \toprule[1.5pt]
+      \textbf{Column} & \textbf{Header} & \textbf{Description} \\\midrule[1pt]
+      1 & ID & Unique identifer for an example (two pairs)\\
+      2 & Text & Text containing the ambiguous pronoun and two candidate names. About a paragraph in length\\
+      3 & Pronoun & The pronoun, text\\
+      4 & Pronoun-offset	 & Character offset of Pronoun in Column 2 (Text)\\
+      5 & A & The first name, text\\
+      6 & A-offset	 & Character offset of A in Column 2 (Text)\\
+      7 & A-coref	 & Whether A corefers with the pronoun, TRUE or FALSE\\
+      8 & B & The second name, text\\
+      9 & B-offset	 & Character offset of B in Column 2 (Text)\\
+      10 & B-coref	 & Whether B corefers with the pronoun, TRUE or FALSE\\
+      11 & URL & The URL of the source Wikipedia page\\
+      \bottomrule[1.5pt]
+    \end{tabularx}
+\end{table}
+
+Following Kaggle competition “Gendered Pronoun Resolution”, 4 for each abstract from Wikipedia pages we are given a pronoun, and we try to predict the right coreference for it, i.e. to which named entity (A or B) it refers. Let’s take a look at this simple example:
+“John entered the room and saw [A] Julia. [Pronoun] She was talking to [B] Mary Hendriks and looked so extremely gorgeous that John was stunned and couldn’t say a word.”
+Here “Julia” is marked as entity A, “Mary Hendriks” – as entity B, and pronoun “She” is marked as Pronoun. In this particular case the task is to correctly identify to which entity the given pronoun refers.
+
+\section{Extract features with BERT}
+
+\section{Fine-tune BERT}
+
+

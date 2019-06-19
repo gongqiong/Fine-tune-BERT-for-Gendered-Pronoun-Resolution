@@ -1,0 +1,22 @@
+\chapter{Method}
+
+
+\section{Mind the GAP}
+\section{Extract Features with BERT}
+
+\section{Fine-tune BERT}
+
+\section{Evaluation Method}
+
+\subsection{Multi-class Logarithmic Loss}
+
+The evaluation metric for the following project is the multi-class logarithmic loss as shown below.
+\begin{equation}
+	logloss=-\frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{M} y_{i j} \log \left(p_{i j}\right)
+\end{equation}
+where $N$ is the number of samples in the test set, $M$ is $3$,  $log$ is the natural logarithm, $y_{i j}$ is $1$ if observation $i$ belongs to class $j$ and $0$ otherwise, and $p_{i j}$ is the predicted probability that observation $i$ belongs to class $j$.
+
+The probabilities are not required to sum to one because they are rescaled prior to being scored (each row is divided by the row sum). In order to avoid the extremes of the log function, predicted probabilities are replaced with $max(min(p, 1-10^{-15}), 10^{-15})$.
+
+\subsection{F1 Score}
+In order to measure gender bias, in addition to an overall $F_1$ score O, we also use separate $F_1$ scores for the masculine, M, and feminine, F, examples and take a feminine-to-masculine $F_1$ score ratio, F/M, as a measure of bias as done in the original GAP paper~\inlinecite{webster2018mind}.

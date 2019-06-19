@@ -27,21 +27,22 @@ import numpy as np
 import six
 import tensorflow as tf
 
-
+#配置
+#模型默认参数 文件处理函数
 class BertConfig(object):
   """Configuration for `BertModel`."""
 
   def __init__(self,
-               vocab_size,
-               hidden_size=768,
-               num_hidden_layers=12,
-               num_attention_heads=12,
-               intermediate_size=3072,
-               hidden_act="gelu",
-               hidden_dropout_prob=0.1,
+               vocab_size,           #词典大小
+               hidden_size=768,      #隐藏单元数
+               num_hidden_layers=12, #隐藏层大小
+               num_attention_heads=12,#注意力头数
+               intermediate_size=3072,#中间层大小
+               hidden_act="gelu",     #激励函数
+               hidden_dropout_prob=0.1,#隐藏层dropout概率
                attention_probs_dropout_prob=0.1,
                max_position_embeddings=512,
-               type_vocab_size=16, # next sentence prediction 任务 默认2
+               type_vocab_size=16, # next sentence prediction 任务 默认2； bert_config.json 内为2
                initializer_range=0.02):
     """Constructs BertConfig.
 
@@ -168,8 +169,8 @@ class BertModel(object):
     if token_type_ids is None:
       token_type_ids = tf.zeros(shape=[batch_size, seq_length], dtype=tf.int32)
 
-    with tf.variable_scope(scope, default_name="bert"):
-      with tf.variable_scope("embeddings"):
+    with tf.variable_scope(scope, default_name="bert"):    # 定义变量作用范围
+      with tf.variable_scope("embeddings"):                # 计算词向量
         # Perform embedding lookup on the word ids.
         (self.embedding_output, self.embedding_table) = embedding_lookup(
             input_ids=input_ids,
@@ -376,7 +377,7 @@ def create_initializer(initializer_range=0.02):
   """Creates a `truncated_normal_initializer` with the given range."""
   return tf.truncated_normal_initializer(stddev=initializer_range)
 
-
+# 获取词向量
 def embedding_lookup(input_ids,
                      vocab_size,
                      embedding_size=128,
@@ -411,7 +412,7 @@ def embedding_lookup(input_ids,
       shape=[vocab_size, embedding_size],
       initializer=create_initializer(initializer_range))
 
-  flat_input_ids = tf.reshape(input_ids, [-1])
+  flat_input_ids = tf.reshape(input_ids, [-1])  # [batch_size*seq_length*input_num,]
   if use_one_hot_embeddings:
     one_hot_input_ids = tf.one_hot(flat_input_ids, depth=vocab_size)
     output = tf.matmul(one_hot_input_ids, embedding_table)
@@ -424,7 +425,7 @@ def embedding_lookup(input_ids,
                       input_shape[0:-1] + [input_shape[-1] * embedding_size])
   return (output, embedding_table)
 
-
+# 词向量后续处理
 def embedding_postprocessor(input_tensor,
                             use_token_type=False,
                             token_type_ids=None,
@@ -467,8 +468,10 @@ def embedding_postprocessor(input_tensor,
   seq_length = input_shape[1]
   width = input_shape[2]
 
+# output=输入词向量
   output = input_tensor
 
+# segment embeddings
   if use_token_type:
     if token_type_ids is None:
       raise ValueError("`token_type_ids` must be specified if"
@@ -486,6 +489,7 @@ def embedding_postprocessor(input_tensor,
                                        [batch_size, seq_length, width])
     output += token_type_embeddings
 
+# position embeddings
   if use_position_embeddings:
     assert_op = tf.assert_less_equal(seq_length, max_position_embeddings)
     with tf.control_dependencies([assert_op]):

@@ -19,9 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import optimization
-import run_classifier
-import tokenization
+import BERT.optimization as optimization
+import BERT.tokenization as tokenization
+import Modified_BERT
 import tensorflow as tf
 import tensorflow_hub as hub
 
@@ -97,6 +97,9 @@ def model_fn_builder(num_labels, learning_rate, num_train_steps,
 
     input_ids = features["input_ids"]
     input_mask = features["input_mask"]
+    P_mask = features["P_mask"]
+    A_mask = features["A_mask"]
+    B_mask = features["B_mask"]
     segment_ids = features["segment_ids"]
     label_ids = features["label_ids"]
 
@@ -159,9 +162,9 @@ def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
   processors = {
-      "cola": run_classifier.ColaProcessor,
-      "mnli": run_classifier.MnliProcessor,
-      "mrpc": run_classifier.MrpcProcessor,
+      "cola": Modified_BERT.ColaProcessor,
+      "mnli": Modified_BERT.MnliProcessor,
+      "gpr": Modified_BERT.GAPProcessor,
   }
 
   if not FLAGS.do_train and not FLAGS.do_eval:
@@ -224,13 +227,13 @@ def main(_):
       predict_batch_size=FLAGS.predict_batch_size)
 
   if FLAGS.do_train:
-    train_features = run_classifier.convert_examples_to_features(
+    train_features = Modified_BERT.convert_examples_to_features(
         train_examples, label_list, FLAGS.max_seq_length, tokenizer)
     tf.logging.info("***** Running training *****")
     tf.logging.info("  Num examples = %d", len(train_examples))
     tf.logging.info("  Batch size = %d", FLAGS.train_batch_size)
     tf.logging.info("  Num steps = %d", num_train_steps)
-    train_input_fn = run_classifier.input_fn_builder(
+    train_input_fn = Modified_BERT.input_fn_builder(
         features=train_features,
         seq_length=FLAGS.max_seq_length,
         is_training=True,
@@ -239,7 +242,7 @@ def main(_):
 
   if FLAGS.do_eval:
     eval_examples = processor.get_dev_examples(FLAGS.data_dir)
-    eval_features = run_classifier.convert_examples_to_features(
+    eval_features = Modified_BERT.convert_examples_to_features(
         eval_examples, label_list, FLAGS.max_seq_length, tokenizer)
 
     tf.logging.info("***** Running evaluation *****")
@@ -256,7 +259,7 @@ def main(_):
       eval_steps = int(len(eval_examples) / FLAGS.eval_batch_size)
 
     eval_drop_remainder = True if FLAGS.use_tpu else False
-    eval_input_fn = run_classifier.input_fn_builder(
+    eval_input_fn = Modified_BERT.input_fn_builder(
         features=eval_features,
         seq_length=FLAGS.max_seq_length,
         is_training=False,
@@ -279,7 +282,7 @@ def main(_):
       predict_examples = predict_examples[:(n - n % FLAGS.predict_batch_size)]
 
     predict_file = os.path.join(FLAGS.output_dir, "predict.tf_record")
-    run_classifier.file_based_convert_examples_to_features(
+    Modified_BERT.file_based_convert_examples_to_features(
         predict_examples, label_list, FLAGS.max_seq_length, tokenizer,
         predict_file)
 
@@ -287,7 +290,7 @@ def main(_):
     tf.logging.info("  Num examples = %d", len(predict_examples))
     tf.logging.info("  Batch size = %d", FLAGS.predict_batch_size)
 
-    predict_input_fn = run_classifier.file_based_input_fn_builder(
+    predict_input_fn = Modified_BERT.file_based_input_fn_builder(
         input_file=predict_file,
         seq_length=FLAGS.max_seq_length,
         is_training=False,
